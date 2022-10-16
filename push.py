@@ -11,8 +11,15 @@ def notify(title, body, tag):
     # tag -> bark推送token
     app.logger.info("notify to bark")
     app.logger.debug(tag)
-    url = f"{config.host}/{config.tokens[tag]}/{title}/{body}?url=rocketchat://room"
-    resp = requests.get(url)
+    payload = {
+            "title":title,
+            "body":body,
+            "url":"rocketchat://room",
+            "level":"timeSensitive",
+            "isArchive":1,
+            }
+    url = f"{config.host}/{config.tokens[tag]}/"
+    resp = requests.post(url, json=payload)
     app.logger.debug(resp)
 
 

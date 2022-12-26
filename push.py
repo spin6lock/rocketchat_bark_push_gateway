@@ -18,6 +18,9 @@ def notify(title, body, tag):
             "level":"timeSensitive",
             "isArchive":1,
             }
+    if not config.tokens.get(tag, None):
+        app.logger.debug("skip tag:", tag)
+        return
     url = f"{config.host}/{config.tokens[tag]}/"
     resp = requests.post(url, json=payload)
     app.logger.debug(resp)

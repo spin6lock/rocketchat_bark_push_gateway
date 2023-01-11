@@ -2,3 +2,11 @@ host = "https://your_hostname"
 tokens = {
     "your_rocket_chat_push_token":"your_bark_deviceId",
 }
+dont_disturb_hours = {
+    "token": [
+        {
+            "begin" : 0,
+            "end" : 8,
+        },
+    ]
+}

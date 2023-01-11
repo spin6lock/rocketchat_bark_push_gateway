@@ -1,5 +1,6 @@
 import logging
 import traceback
+import datetime
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -8,9 +9,18 @@ import requests
 import config
 
 def notify(title, body, tag):
+    if not config.tokens.get(tag, None):
+        app.logger.debug("skip tag: %s", tag)
+        return
+    time_periods = config.dont_disturb_hours.get(tag, None)
+    if time_periods:
+        now = datetime.datetime.now()
+        for period in time_periods:
+            if period["begin"] <= now.hour < period["end"]:
+                app.logger.debug("sleep time, skip: %s, %s, %s, %s", tag, period, title, body)
+                return
     # tag -> bark推送token
-    app.logger.info("notify to bark")
-    app.logger.debug(tag)
+    app.logger.info("notify to bark, tag:%s", tag)
     payload = {
             "title":title,
             "body":body,
@@ -18,9 +28,6 @@ def notify(title, body, tag):
             "level":"timeSensitive",
             "isArchive":1,
             }
-    if not config.tokens.get(tag, None):
-        app.logger.debug("skip tag:", tag)
-        return
     url = f"{config.host}/{config.tokens[tag]}/"
     resp = requests.post(url, json=payload)
     app.logger.debug(resp)

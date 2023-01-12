@@ -13,19 +13,20 @@ def notify(title, body, tag):
         app.logger.debug("skip tag: %s", tag)
         return
     time_periods = config.dont_disturb_hours.get(tag, None)
+    level = "timeSensitive"
     if time_periods:
         now = datetime.datetime.now()
         for period in time_periods:
             if period["begin"] <= now.hour < period["end"]:
-                app.logger.debug("sleep time, skip: %s, %s, %s, %s", tag, period, title, body)
-                return
+                app.logger.debug("sleep time, slient: %s, %s, %s, %s", tag, period, title, body)
+                level = "passive"
     # tag -> bark推送token
-    app.logger.info("notify to bark, tag:%s", tag)
+    app.logger.info("notify to bark, tag:%s, level:%s", tag, level)
     payload = {
             "title":title,
             "body":body,
             "url":"rocketchat://room",
-            "level":"timeSensitive",
+            "level": level,
             "isArchive":1,
             }
     url = f"{config.host}/{config.tokens[tag]}/"

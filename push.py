@@ -1,3 +1,5 @@
+#encoding:utf8
+
 import logging
 import traceback
 import datetime
@@ -27,6 +29,7 @@ def notify(title, body, tag):
             "body":body,
             "url":"rocketchat://room",
             "level": level,
+            "group":title,
             "isArchive":1,
             }
     url = f"{config.host}/{config.tokens[tag]}/"
@@ -69,7 +72,7 @@ def push_send(service):
 
 if __name__ == '__main__':
     app.logger.setLevel(1)
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=config.port)
 else:
     gunicorn_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers = gunicorn_logger.handlers

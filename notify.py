@@ -2,12 +2,16 @@ import logging
 import datetime
 import requests
 import config
+import json
 
 logger = logging.getLogger(__name__)
 
-def push_ntfy(token, body):
-    url = f"{config.ntfy_host}/{token}"
-    resp = requests.post(url, data=body)
+def push_ntfy(token, payload):
+    url = f"{config.ntfy_host}"
+    payload["topic"] = token
+    payload["click"] = "rocketchat://room"
+    payload["priority"] = 5
+    resp = requests.post(url, data=json.dumps(payload))
     logger.debug(resp)
 
 def notify(title, body, tag):
@@ -36,7 +40,7 @@ def notify(title, body, tag):
     resp = requests.post(url, json=payload)
     logger.debug(resp)
     # ntfy
-    push_ntfy(config.tokens[tag], body)
+    push_ntfy(config.tokens[tag], payload)
 
 if __name__ == '__main__':
     # 设置日志级别
@@ -44,5 +48,10 @@ if __name__ == '__main__':
     
     # 测试push_ntfy功能
     test_token = "qPKzhYeHRTMidHxDMnRYEd"  # 替换为实际的token
-    test_payload = "test"
+    test_payload = {
+        "topic": f"{test_token}",
+        "title": "alert",
+        "priority": 5,
+        "click": "rocketchat://room",
+    }
     push_ntfy(test_token, test_payload) 

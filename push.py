@@ -2,40 +2,11 @@
 
 import logging
 import traceback
-import datetime
 from flask import Flask, request
+import config
+import notify
 
 app = Flask(__name__)
-
-import requests
-import config
-
-def notify(title, body, tag):
-    if not config.tokens.get(tag, None):
-        app.logger.debug("skip tag: %s", tag)
-        return
-    time_periods = config.dont_disturb_hours.get(tag, None)
-    level = "timeSensitive"
-    if time_periods:
-        now = datetime.datetime.now()
-        for period in time_periods:
-            if period["begin"] <= now.hour < period["end"]:
-                app.logger.debug("sleep time, slient: %s, %s, %s, %s", tag, period, title, body)
-                level = "passive"
-    # tag -> bark推送token
-    app.logger.info("notify to bark, tag:%s, level:%s", tag, level)
-    payload = {
-            "title":title,
-            "body":body,
-            "url":"rocketchat://room",
-            "level": level,
-            "group":title,
-            "isArchive":1,
-            }
-    url = f"{config.host}/{config.tokens[tag]}/"
-    resp = requests.post(url, json=payload)
-    app.logger.debug(resp)
-
 
 @app.route('/push/<string:service>/send', methods=['POST'])
 def push_send(service):
@@ -58,7 +29,7 @@ def push_send(service):
         title = request.json['options']['title']
         body = request.json['options']['text']
 
-        notify(title=title, body=body, tag=token)
+        notify.notify(title=title, body=body, tag=token)
 
         app.logger.info('Forwarded the received notification, tag=%s', token)
     except:

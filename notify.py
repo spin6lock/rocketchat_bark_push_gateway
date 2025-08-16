@@ -13,7 +13,7 @@ def push_ntfy(token, payload):
     payload["click"] = "rocketchat://room"
     payload["priority"] = 5
     resp = requests.post(url, data=json.dumps(payload))
-    logger.debug(resp)
+    logger.debug("ntfy response: %s", resp)
 
 def notify(title, body, tag):
     if not config.tokens.get(tag, None):

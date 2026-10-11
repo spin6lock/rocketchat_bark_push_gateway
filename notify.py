@@ -27,7 +27,7 @@ def notify(title, body, tag):
             if period["begin"] <= now.hour < period["end"]:
                 logger.debug("sleep time, slient: %s, %s, %s, %s", tag, period, title, body)
                 level = "passive"
-    # tag -> bark推送token
+    # tag -> bark推送token列表
     logger.info("notify to bark, tag:%s, level:%s", tag, level)
     payload = {
             "title":title,
@@ -37,15 +37,16 @@ def notify(title, body, tag):
             "group":title,
             "isArchive":1,
             }
-    url = f"{config.host}/{config.tokens[tag]}/"
-    resp = requests.post(url, json=payload)
-    logger.debug(resp)
-    # ntfy
-    ntfy_payload = {
-        "text": body,
-        "title": title,
-    }
-    push_ntfy(config.tokens[tag], ntfy_payload)
+    for bark_key in config.tokens[tag]:
+        url = f"{config.host}/{bark_key}/"
+        resp = requests.post(url, json=payload)
+        logger.debug(resp)
+        # ntfy
+        ntfy_payload = {
+            "text": body,
+            "title": title,
+        }
+        push_ntfy(bark_key, ntfy_payload)
 
 if __name__ == '__main__':
     # 设置日志级别

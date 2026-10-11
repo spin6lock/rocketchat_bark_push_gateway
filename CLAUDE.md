@@ -17,7 +17,7 @@ The application consists of three main Python modules:
 ## Configuration
 
 - Copy `config.py.example` to `config.py` and update with your settings
-- `tokens` dict maps RocketChat push tokens to Bark device IDs
+- `tokens` dict maps RocketChat push tokens to a list of Bark device IDs; each device in the list receives the same notification
 - `dont_disturb_hours` configures quiet hours per token
 - `host` is the Bark server URL
 - `ntfy_host` is the ntfy server URL

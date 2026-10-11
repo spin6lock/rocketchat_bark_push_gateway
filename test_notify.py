@@ -8,7 +8,7 @@ import datetime
 class TestNotifyDontDisturb(unittest.TestCase):
     def setUp(self):
         self.test_tag = "test_token"
-        config.tokens[self.test_tag] = "test_bark_token"
+        config.tokens[self.test_tag] = ["test_bark_token"]
         config.dont_disturb_hours[self.test_tag] = [
             {"begin": 13, "end": 14}
         ]
@@ -83,7 +83,7 @@ class TestNotifyDontDisturb(unittest.TestCase):
     @patch('notify.push_ntfy')
     def test_notify_with_no_dont_disturb_config(self, mock_push_ntfy, mock_post):
         tag = "no_config_token"
-        config.tokens[tag] = "test_bark_token"
+        config.tokens[tag] = ["test_bark_token"]
 
         notify.notify("test_title", "test_body", tag)
 
@@ -99,7 +99,7 @@ class TestNotifyDontDisturb(unittest.TestCase):
     @patch('notify.datetime')
     def test_notify_with_multiple_time_periods(self, mock_datetime, mock_push_ntfy, mock_post):
         tag = "multi_period_token"
-        config.tokens[tag] = "test_bark_token"
+        config.tokens[tag] = ["test_bark_token"]
         config.dont_disturb_hours[tag] = [
             {"begin": 1, "end": 3},
             {"begin": 13, "end": 14},
@@ -119,6 +119,21 @@ class TestNotifyDontDisturb(unittest.TestCase):
         
         del config.tokens[tag]
         del config.dont_disturb_hours[tag]
+
+    @patch('notify.requests.post')
+    @patch('notify.push_ntfy')
+    def test_notify_fans_out_to_all_bark_keys(self, mock_push_ntfy, mock_post):
+        tag = "multi_key_token"
+        config.tokens[tag] = ["bark_key_a", "bark_key_b"]
+
+        notify.notify("test_title", "test_body", tag)
+
+        urls = [c[0][0] for c in mock_post.call_args_list]
+        self.assertEqual(urls, [f"{config.host}/bark_key_a/", f"{config.host}/bark_key_b/"])
+        ntfy_topics = [c[0][0] for c in mock_push_ntfy.call_args_list]
+        self.assertEqual(ntfy_topics, ["bark_key_a", "bark_key_b"])
+
+        del config.tokens[tag]
 
 
 if __name__ == '__main__':
